@@ -1,4 +1,4 @@
-package it.tabacchi.prodotti.movimentomagazzino;
+package it.tabacchi.prodotti.grafico;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

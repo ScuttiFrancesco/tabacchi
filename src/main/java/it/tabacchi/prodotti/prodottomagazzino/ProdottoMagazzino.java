@@ -1,5 +1,6 @@
 package it.tabacchi.prodotti.prodottomagazzino;
 
+import it.tabacchi.enums.TipoMovimento;
 import it.tabacchi.prodotti.prodotto.Prodotto;
 import jakarta.persistence.*;
 
@@ -31,5 +32,36 @@ public class ProdottoMagazzino {
     private Integer scortaMinima;
 
     @Column(name = "ultimo_aggiornamento")
-    private LocalDateTime ultimoAggiornamento;
+    private LocalDateTime ultimoAggiornamento = LocalDateTime.now();
+
+    //@formatter:off
+    public ProdottoMagazzino() {}
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Prodotto getProdotto() { return prodotto; }
+    public void setProdotto(Prodotto prodotto) { this.prodotto = prodotto; }
+    public BigDecimal getPrezzoVendita() { return prezzoVendita; }
+    public void setPrezzoVendita(BigDecimal prezzoVendita) { this.prezzoVendita = prezzoVendita; }
+    public BigDecimal getPrezzoAcquisto() { return prezzoAcquisto; }
+    public void setPrezzoAcquisto(BigDecimal prezzoAcquisto) { this.prezzoAcquisto = prezzoAcquisto; }
+    public Integer getScortaAttuale() { return scortaAttuale; }
+    public void setScortaAttuale(Integer scortaAttuale) { this.scortaAttuale = scortaAttuale; }
+    public Integer getScortaMinima() { return scortaMinima; }
+    public void setScortaMinima(Integer scortaMinima) { this.scortaMinima = scortaMinima; }
+    public LocalDateTime getUltimoAggiornamento() { return ultimoAggiornamento; }
+    public void setUltimoAggiornamento(LocalDateTime ultimoAggiornamento) { this.ultimoAggiornamento = ultimoAggiornamento; }
+    //@formatter:on
+
+    public void aggiornaMagazzino(Integer quantita, TipoMovimento tipoMovimento){
+        if (quantita != null && quantita > 0) {
+            if (tipoMovimento == TipoMovimento.RIFORNIMENTO) {
+                this.scortaAttuale += quantita;
+            } else if (tipoMovimento == TipoMovimento.VENDITA) {
+                if (quantita > this.scortaAttuale) {
+                    throw new IllegalArgumentException("Quantità di vendita superiore alla scorta attuale");
+                }
+                this.scortaAttuale -= quantita;
+            }
+        }
+    }
 }

@@ -9,7 +9,7 @@ import java.util.function.Function;
 
 public class PaginationUse {
 
-    public static Pageable pagination(PaginationInfoRquest paginationInfoRquest) {
+    public static Pageable pagination(PaginationInfoRequest paginationInfoRquest) {
         Sort.Direction direction = paginationInfoRquest.getSortDirection() != null
                 ? paginationInfoRquest.getSortDirection()
                 : Sort.Direction.ASC;
@@ -35,7 +35,7 @@ public class PaginationUse {
     public static <T, D> PaginatedResponse<List<D>> buildPaginatedResponse(
             Page<T> page,
             Function<List<T>, List<D>> mapper,
-            PaginationInfoRquest paginationInfoRquest) {
+            PaginationInfoRequest paginationInfoRquest) {
 
         List<D> dtoList = mapper.apply(page.getContent());
 

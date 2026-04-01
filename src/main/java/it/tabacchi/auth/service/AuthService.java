@@ -51,9 +51,11 @@ public class AuthService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Credenziali non valide");
         }
-        // Prepariamo la risposta di sfida (MFA)
-        AuthResponse response = new AuthResponse();
-        response.setRequiresVerification(true);
+
+        String accessToken = jwtUtil.generateAccessToken(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+
+        AuthResponse response = new AuthResponse(accessToken, refreshToken.getToken(), jwtUtil.getAccessTokenExpiry(), refreshToken.getExpiryDate());
         response.setIsTemporaryPassword(user.getIsTemporaryPassword());
 
         return response;
@@ -105,10 +107,9 @@ public class AuthService {
     }
 
     public void logout(RefreshTokenRequest request, String authorizationHeader) {
-       // Invalida il refresh token nel DB
-        refreshTokenService.deleteByToken(extractRefreshToken(request, authorizationHeader));
+        String refreshTokenValue = extractRefreshToken(request, authorizationHeader);
 
-        // Blacklista l'access token corrente così non può più essere usato
+        // Blacklista l'access token corrente se presente nell'header
         if (org.springframework.util.StringUtils.hasText(authorizationHeader)
                 && authorizationHeader.startsWith("Bearer ")) {
             String accessToken = authorizationHeader.substring(7);
@@ -119,6 +120,9 @@ public class AuthService {
                 // Token già scaduto o malformato: non serve blacklistarlo
             }
         }
+
+        // Invalida il refresh token nel DB (funziona sempre, con o senza access token)
+        refreshTokenService.deleteByToken(refreshTokenValue);
     }
 
     private String extractRefreshToken(RefreshTokenRequest request, String authorizationHeader) {

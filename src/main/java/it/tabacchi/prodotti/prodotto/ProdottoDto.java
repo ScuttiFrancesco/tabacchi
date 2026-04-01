@@ -1,9 +1,12 @@
 package it.tabacchi.prodotti.prodotto;
 
+import it.tabacchi.enums.Categoria;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record ProdottoRequest(
+public record ProdottoDto(
+
+        Long id,
 
         @NotBlank(message = "Il barcode è obbligatorio")
         @NotNull(message = "Il barcode non può essere null")
@@ -18,6 +21,8 @@ public record ProdottoRequest(
         String descrizione,
 
         @NotNull(message = "La categoria è obbligatoria")
-        String categoria
+        Categoria categoria,
+
+        Boolean attivo
 ) {
 }

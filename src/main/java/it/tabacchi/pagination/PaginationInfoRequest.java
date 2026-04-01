@@ -2,13 +2,19 @@ package it.tabacchi.pagination;
 
 import org.springframework.data.domain.Sort;
 
-public class PaginationInfoRquest {
+public class PaginationInfoRequest {
     private int paginaCorrente;
     private int numeroElementiPagina;
     private String sortBy;
     private Sort.Direction sortDirection;
 
     //@formatter:off
+    public PaginationInfoRequest(int page, int size, String sortBy, Sort.Direction direction) {
+        this.paginaCorrente = page;
+        this.numeroElementiPagina = size;
+        this.sortBy =sortBy;
+        this.sortDirection = direction;
+    }
     public int getPaginaCorrente() { return paginaCorrente; }
     public void setPaginaCorrente(int paginaCorrente) { this.paginaCorrente = paginaCorrente; }
     public int getNumeroElementiPagina() { return numeroElementiPagina; }

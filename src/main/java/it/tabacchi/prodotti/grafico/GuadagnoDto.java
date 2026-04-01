@@ -1,4 +1,4 @@
-package it.tabacchi.prodotti.movimentomagazzino;
+package it.tabacchi.prodotti.grafico;
 
 import it.tabacchi.enums.PuntoCaldo;
 

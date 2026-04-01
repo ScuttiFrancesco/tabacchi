@@ -2,7 +2,7 @@ package it.tabacchi.notifica;
 
 import it.tabacchi.enums.TipoNotifica;
 import it.tabacchi.pagination.PaginatedResponse;
-import it.tabacchi.pagination.PaginationInfoRquest;
+import it.tabacchi.pagination.PaginationInfoRequest;
 import it.tabacchi.pagination.PaginationUse;
 import it.tabacchi.shared.SharedMethods;
 import it.tabacchi.user.User;
@@ -58,7 +58,7 @@ public class NotificaService {
     }
 
     @Transactional(readOnly = true)
-    public PaginatedResponse<List<NotificaDto>> getAllByCriteria(NotificaFilter filter, PaginationInfoRquest paginationInfo) {
+    public PaginatedResponse<List<NotificaDto>> getAllByCriteria(NotificaFilter filter, PaginationInfoRequest paginationInfo) {
 
         Specification<Notifica> spec = Specification.where(NotificaSpec.byDestinatarioId(sharedMethods.getUserFromContext().getId()))
                 .and(NotificaSpec.byTipoNotifica(filter.getTipoNotifica()))

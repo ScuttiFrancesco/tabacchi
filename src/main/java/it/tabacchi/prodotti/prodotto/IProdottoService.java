@@ -1,19 +1,20 @@
 package it.tabacchi.prodotti.prodotto;
 
 import it.tabacchi.pagination.PaginatedResponse;
-import it.tabacchi.pagination.PaginationInfoRquest;
+import it.tabacchi.pagination.PaginationInfoRequest;
+
 
 import java.util.List;
 
 public interface IProdottoService {
 
-    ProdottoUpdate create(ProdottoRequest request);
+    ProdottoDto create(ProdottoDto request);
 
-    ProdottoUpdate update(ProdottoUpdate update);
+    ProdottoDto update(ProdottoDto update);
 
-    ProdottoUpdate getById(Long id);
+    ProdottoDto getById(Long id);
 
     void delete(Long id);
 
-    PaginatedResponse<List<ProdottoList>> getAll(PaginationInfoRquest paginationInfo);
+    PaginatedResponse<List<ProdottoList>> search(ProdottoFilter filter, PaginationInfoRequest paginationInfo);
 }

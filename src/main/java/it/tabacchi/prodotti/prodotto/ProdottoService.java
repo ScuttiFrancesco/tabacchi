@@ -1,0 +1,77 @@
+package it.tabacchi.prodotti.prodotto;
+
+import it.tabacchi.exception.DuplicateDataException;
+import it.tabacchi.pagination.PaginatedResponse;
+import it.tabacchi.pagination.PaginationInfoRequest;
+import it.tabacchi.pagination.PaginationUse;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class ProdottoService implements IProdottoService {
+
+    private final ProdottoRepository prepository;
+    private final ProdottoMapper pmapper;
+
+    public ProdottoService(ProdottoRepository prepository, ProdottoMapper pmapper) {
+        this.prepository = prepository;
+        this.pmapper = pmapper;
+    }
+
+    @Override
+    public ProdottoDto create(ProdottoDto request) {
+
+            if (prepository.existsByAamsCode(request.aamsCode())) {
+                throw new DuplicateDataException("AAMS code già esistente");
+            }
+
+            Prodotto prodottoEntity = pmapper.toEntity(request);
+            prodottoEntity = prepository.save(prodottoEntity);
+
+            return pmapper.toDto(prodottoEntity);
+    }
+
+    @Override
+    public ProdottoDto update(ProdottoDto update) {
+
+        Prodotto prodottoEntity = prepository.findById(update.id())
+                .orElseThrow(() -> new EntityNotFoundException("Prodotto non trovato"));
+
+        if (prepository.existsByBarcodeOrAamsCodeAndIdNot(update.barcode(), update.aamsCode(), update.id())) {
+            throw new DuplicateDataException("Barcode o AAMS code già esistente per un altro prodotto");
+        }
+
+        prodottoEntity = pmapper.toEntity(update);
+        prodottoEntity = prepository.save(prodottoEntity);
+
+        return pmapper.toDto(prodottoEntity);
+    }
+
+    @Override
+    public ProdottoDto getById(Long id) {
+       return pmapper.toDto(prepository.findById(id)
+               .orElseThrow(() -> new EntityNotFoundException("Prodotto non trovato")));
+    }
+
+    @Override
+    public void delete(Long id) {
+        if (!prepository.existsById(id)) {
+            throw new EntityNotFoundException("Prodotto non trovato");
+        }
+        prepository.deleteById(id);
+    }
+
+    @Override
+    public PaginatedResponse<List<ProdottoList>> search(ProdottoFilter filter, PaginationInfoRequest paginationInfo) {
+
+        Specification<Prodotto> spec = Specification.where((Specification<Prodotto>) null)
+                .and(ProdottoSpec.byCategoria(filter.getCategoria()));
+
+        Page<Prodotto> anagrafichePaged = prepository.findAll(spec, PaginationUse.pagination(paginationInfo));
+        return PaginationUse.buildPaginatedResponse(anagrafichePaged, pmapper::toDtoList, paginationInfo);
+    }
+}
