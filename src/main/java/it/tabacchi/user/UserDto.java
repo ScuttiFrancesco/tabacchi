@@ -1,8 +1,6 @@
 package it.tabacchi.user;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import it.tabacchi.enums.auth.Role;
-import java.time.Instant;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDto {

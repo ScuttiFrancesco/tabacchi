@@ -34,9 +34,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         Set<GrantedAuthority> authorities = new HashSet<>();
 
-        // 1. Aggiungi il Ruolo SENZA prefisso "ROLE_" (se nel DB è "ADMIN", carichi "ADMIN")
-        authorities.add(new SimpleGrantedAuthority(user.getRole().name()));
-
         // Questo servizio viene usato da Spring Security DOPO il login,
         // per caricare i dettagli dell'utente per ogni richiesta autenticata con JWT.
         // La logica di business (es. controllo del restaurantId al login) non va qui,

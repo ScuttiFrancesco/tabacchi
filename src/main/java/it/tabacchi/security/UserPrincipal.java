@@ -9,7 +9,7 @@ public class UserPrincipal extends User {
     private final Long id;
 
     public UserPrincipal(it.tabacchi.user.User user, Collection<? extends GrantedAuthority> authorities) {
-        super(user.getEmail(), user.getPassword(), user.getIsActive(), true, true, true, authorities);
+        super(user.getEmail(), user.getPassword(), true, true, true, true, authorities);
         this.id = user.getId();
     }
 

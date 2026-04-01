@@ -2,9 +2,9 @@ package it.tabacchi.auth.service;
 
 import it.tabacchi.auth.RefreshToken;
 import it.tabacchi.auth.dto.*;
-import it.tabacchi.enums.auth.MfaType;
 import it.tabacchi.exception.InvalidRefreshTokenException;
 import it.tabacchi.security.JwtUtil;
+import it.tabacchi.security.TokenBlacklistService;
 import it.tabacchi.user.User;
 import it.tabacchi.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -13,9 +13,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class AuthService {
@@ -26,6 +23,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final EmailService emailService;
     private final PasswordService passwordService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Autowired
     public AuthService(UserRepository userRepository,
@@ -34,13 +32,15 @@ public class AuthService {
                       RefreshTokenService refreshTokenService,
                       AuthenticationManager authenticationManager,
                       EmailService emailService,
-                      PasswordService passwordService) {
+                      PasswordService passwordService, 
+                      TokenBlacklistService tokenBlacklistService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.refreshTokenService = refreshTokenService;
         this.emailService = emailService;
         this.passwordService = passwordService;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     public AuthResponse authenticate(AuthRequest request) {
@@ -54,54 +54,6 @@ public class AuthService {
         // Prepariamo la risposta di sfida (MFA)
         AuthResponse response = new AuthResponse();
         response.setRequiresVerification(true);
-        response.setIsTemporaryPassword(user.getIsTemporaryPassword());
-
-        // Determiniamo i metodi disponibili
-        List<MfaType> methods = new ArrayList<>();
-        methods.add(MfaType.EMAIL); // Email sempre disponibile
-        if (user.getMfaSecret() != null && user.getMfaEnabled()) {
-            methods.add(MfaType.AUTHENTICATOR);
-        }
-        response.setAvailableMfaMethods(methods);
-        // Se l'unico metodo è EMAIL, inviamo subito il codice per comodità
-        if (methods.size() == 1) {
-            sendEmailVerification(user);
-        }
-        return response;
-    }
-
-    // Metodo per inviare/re-inviare il codice email (chiamabile anche da un endpoint dedicato)
-    public void sendEmailVerification(User user) {
-        String verificationCode = passwordService.generateVerificationCode();
-        user.setVerificationCode(verificationCode);
-        user.setVerificationCodeExpiry(Instant.now().plusSeconds(600));
-        userRepository.save(user);
-
-       
-        emailService.sendVerificationCode(user.getEmail(), user.getNome(), verificationCode);
-    }
-
-    private AuthResponse createFullAuthResponse(User user) {
-        String accessToken = jwtUtil.generateAccessToken(user);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
-
-        // Prepariamo la lista dei metodi per il frontend
-        List<MfaType> methods = new ArrayList<>();
-        methods.add(MfaType.EMAIL);
-        if (user.getMfaSecret() != null && user.getMfaEnabled()) {
-            methods.add(MfaType.AUTHENTICATOR);
-        }
-
-        AuthResponse response = new AuthResponse(
-                accessToken,
-                refreshToken.getToken(),
-                jwtUtil.getAccessTokenExpiry(),
-                refreshToken.getExpiryDate()
-        );
-
-        // Impostiamo i metadati MFA
-        response.setRequiresVerification(false); // Qui è FALSE perché abbiamo finito
-        response.setAvailableMfaMethods(methods);
         response.setIsTemporaryPassword(user.getIsTemporaryPassword());
 
         return response;
@@ -153,7 +105,20 @@ public class AuthService {
     }
 
     public void logout(RefreshTokenRequest request, String authorizationHeader) {
+       // Invalida il refresh token nel DB
         refreshTokenService.deleteByToken(extractRefreshToken(request, authorizationHeader));
+
+        // Blacklista l'access token corrente così non può più essere usato
+        if (org.springframework.util.StringUtils.hasText(authorizationHeader)
+                && authorizationHeader.startsWith("Bearer ")) {
+            String accessToken = authorizationHeader.substring(7);
+            try {
+                java.time.Instant expiry = jwtUtil.extractExpiration(accessToken).toInstant();
+                tokenBlacklistService.revokeToken(accessToken, expiry);
+            } catch (Exception ignored) {
+                // Token già scaduto o malformato: non serve blacklistarlo
+            }
+        }
     }
 
     private String extractRefreshToken(RefreshTokenRequest request, String authorizationHeader) {

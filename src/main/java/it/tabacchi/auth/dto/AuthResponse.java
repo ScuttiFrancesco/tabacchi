@@ -3,7 +3,6 @@ package it.tabacchi.auth.dto;
 import java.time.Instant;
 import java.util.List;
 
-import it.tabacchi.enums.auth.MfaType;
 
 public class AuthResponse {
     private String accessToken;
@@ -13,7 +12,6 @@ public class AuthResponse {
     private Instant refreshTokenExpiry;
     private boolean requiresVerification = false;
     private boolean isTemporaryPassword = false;
-    private List<MfaType> availableMfaMethods;
 
     public AuthResponse() {
     }
@@ -39,8 +37,6 @@ public class AuthResponse {
     public void setRequiresVerification(boolean requiresVerification) { this.requiresVerification = requiresVerification; }
     public boolean isTemporaryPassword() { return isTemporaryPassword; }
     public void setIsTemporaryPassword(boolean isTemporaryPassword) { this.isTemporaryPassword = isTemporaryPassword; }
-    public List<MfaType> getAvailableMfaMethods() { return availableMfaMethods; }
-    public void setAvailableMfaMethods(List<MfaType> availableMfaMethods) { this.availableMfaMethods = availableMfaMethods; }
     //@formatter:on
 }
       

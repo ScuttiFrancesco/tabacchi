@@ -1,5 +1,6 @@
 package it.tabacchi.prodotti.prodotto;
 
+import it.tabacchi.enums.Categoria;
 import jakarta.persistence.*;
 
 @Entity
@@ -19,7 +20,8 @@ public class Prodotto {
     @Column(name = "descrizione", nullable = false)
     private String descrizione;
 
-    private String categoria;//DA DEFINIRE SE ENUM O ENTITY
+    @Enumerated(EnumType.STRING)
+    private Categoria categoria;
 
     @Column(name = "is_attivo")
     private Boolean isAttivo = true;
@@ -34,9 +36,9 @@ public class Prodotto {
     public void setAamsCode(String aamsCode) { this.aamsCode = aamsCode; }
     public String getDescrizione() { return descrizione; }
     public void setDescrizione(String descrizione) { this.descrizione = descrizione; }
-    public String getCategoria() { return categoria; }
-    public void setCategoria(String categoria) { this.categoria = categoria; }
+    public Categoria getCategoria() { return categoria; }
+    public void setCategoria(Categoria categoria) { this.categoria = categoria; }
     public Boolean isAttivo() { return isAttivo; }
     public void setAttivo(Boolean attivo) { this.isAttivo = attivo; }
-     //@formatter:on
+    //@formatter:on
 }
