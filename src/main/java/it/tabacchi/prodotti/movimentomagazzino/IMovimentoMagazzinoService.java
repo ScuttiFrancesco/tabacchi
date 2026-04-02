@@ -11,7 +11,7 @@ public interface IMovimentoMagazzinoService {
 
     MovimentoMagazzinoDto create(MovimentoMagazzinoRequest request);
 
-    MovimentoMagazzinoDto update(MovimentoMagazzinoRequest request);
+    MovimentoMagazzinoDto update(MovimentoMagazzinoRequest request, Long id);
 
     MovimentoMagazzinoDto getById(Long id);
 

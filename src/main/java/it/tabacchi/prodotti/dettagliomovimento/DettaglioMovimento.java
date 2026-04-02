@@ -15,14 +15,6 @@ public class DettaglioMovimento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "movimento_magazzino_id")
-    private MovimentoMagazzino movimentoMagazzino;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "prodotto_id")
-    private Prodotto prodotto;
-
     @Column(name = "quantita", nullable = false)
     private Integer quantita;
 
@@ -32,20 +24,28 @@ public class DettaglioMovimento {
     @Column(name = "prezzo_vendita", nullable = false, precision = 10, scale = 2)
     private BigDecimal prezzoVendita;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movimento_magazzino_id")
+    private MovimentoMagazzino movimentoMagazzino;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "prodotto_id")
+    private Prodotto prodotto;
     //@formatter:off
+
     public DettaglioMovimento() {}
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public MovimentoMagazzino getMovimentoMagazzino() { return movimentoMagazzino; }
-    public void setMovimentoMagazzino(MovimentoMagazzino movimentoMagazzino) {this.movimentoMagazzino = movimentoMagazzino;}
-    public Prodotto getProdotto() { return prodotto; }
-    public void setProdotto(Prodotto prodotto) { this.prodotto = prodotto; }
     public Integer getQuantita() { return quantita; }
     public void setQuantita(Integer quantita) { this.quantita = quantita; }
     public BigDecimal getPrezzoAcquisto() { return prezzoAcquisto; }
     public void setPrezzoAcquisto(BigDecimal prezzoAcquisto) { this.prezzoAcquisto = prezzoAcquisto; }
     public BigDecimal getPrezzoVendita() { return prezzoVendita; }
     public void setPrezzoVendita(BigDecimal prezzoVendita) { this.prezzoVendita = prezzoVendita; }
+    public MovimentoMagazzino getMovimentoMagazzino() { return movimentoMagazzino; }
+    public void setMovimentoMagazzino(MovimentoMagazzino movimentoMagazzino) {this.movimentoMagazzino = movimentoMagazzino;}
+    public Prodotto getProdotto() { return prodotto; }
+    public void setProdotto(Prodotto prodotto) { this.prodotto = prodotto; }
     //@formatter:on
 
     // In DettaglioMovimento.java (senza toccare equals/hashCode standard)

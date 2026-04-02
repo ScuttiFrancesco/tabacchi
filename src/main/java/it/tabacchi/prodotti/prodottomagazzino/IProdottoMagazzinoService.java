@@ -11,7 +11,7 @@ public interface IProdottoMagazzinoService {
 
     ProdottoMagazzinoDto create(ProdottoMagazzinoRequest request);
 
-    ProdottoMagazzinoDto update(ProdottoMagazzinoRequest update);
+    ProdottoMagazzinoDto update(ProdottoMagazzinoRequest update, Long id);
 
     ProdottoMagazzinoDto getById(Long id);
 

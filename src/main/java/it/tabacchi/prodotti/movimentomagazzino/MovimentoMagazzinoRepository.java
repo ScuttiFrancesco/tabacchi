@@ -46,6 +46,6 @@ public interface MovimentoMagazzinoRepository extends JpaRepository<MovimentoMag
 
 
     @Override
-    @EntityGraph(attributePaths = {"dettagliMovimento"})
+    @EntityGraph(attributePaths = {"dettagliMovimento", "dettagliMovimento.prodotto"})
     Optional<MovimentoMagazzino> findById(Long id);
 }

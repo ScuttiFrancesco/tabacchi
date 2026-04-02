@@ -10,8 +10,6 @@ import it.tabacchi.pagination.PaginatedResponse;
 import it.tabacchi.pagination.PaginationInfoRequest;
 import it.tabacchi.pagination.PaginationUse;
 import it.tabacchi.prodotti.dettagliomovimento.DettaglioMovimento;
-import it.tabacchi.prodotti.dettagliomovimento.DettaglioMovimentoMapper;
-import it.tabacchi.prodotti.dettagliomovimento.DettaglioMovimentoRepository;
 import it.tabacchi.prodotti.dettagliomovimento.DettaglioMovimentoRequest;
 import it.tabacchi.prodotti.grafico.DateGraficoApp;
 import it.tabacchi.prodotti.grafico.GraficoDto;
@@ -32,21 +30,15 @@ public class MovimentoMagazzinoService implements IMovimentoMagazzinoService {
 
     private final MovimentoMagazzinoRepository mmrepository;
     private final MovimentoMagazzinoMapper mmmapper;
-    private final DettaglioMovimentoRepository dmrepository;
-    private final DettaglioMovimentoMapper dmmapper;
     private final ProdottoRepository prepository;
     private final ProdottoMagazzinoRepository pmrepository;
 
     public MovimentoMagazzinoService(MovimentoMagazzinoRepository mmrepository,
                                      MovimentoMagazzinoMapper mmmapper,
-                                     DettaglioMovimentoRepository dmrepository,
-                                     DettaglioMovimentoMapper dmmapper,
                                      ProdottoRepository prepository,
                                      ProdottoMagazzinoRepository pmrepository) {
         this.mmrepository = mmrepository;
         this.mmmapper = mmmapper;
-        this.dmrepository = dmrepository;
-        this.dmmapper = dmmapper;
         this.prepository = prepository;
         this.pmrepository = pmrepository;
     }
@@ -54,6 +46,9 @@ public class MovimentoMagazzinoService implements IMovimentoMagazzinoService {
     @Override
     @Transactional
     public MovimentoMagazzinoDto create(MovimentoMagazzinoRequest request) {
+        if (request.dettagliMovimento() == null || request.dettagliMovimento().isEmpty()) {
+            throw new IllegalArgumentException("Il movimento di magazzino deve contenere almeno un dettaglio movimento.");
+        }
         MovimentoMagazzino movimentoEntity = mmmapper.toEntity(request);
 
         for (DettaglioMovimentoRequest dettaglioRequest : request.dettagliMovimento()) {
@@ -69,8 +64,8 @@ public class MovimentoMagazzinoService implements IMovimentoMagazzinoService {
                 .map(d -> d.getPrezzoVendita().subtract(d.getPrezzoAcquisto()).multiply(BigDecimal.valueOf(d.getQuantita())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        movimentoEntity.setRicavoTotale(ricavo);
-        movimentoEntity.setGuadagnoTotale(guadagno);
+        movimentoEntity.setRicavo(ricavo);
+        movimentoEntity.setGuadagno(guadagno);
         movimentoEntity = mmrepository.save(movimentoEntity);
 
         return mmmapper.toDto(movimentoEntity);
@@ -78,15 +73,27 @@ public class MovimentoMagazzinoService implements IMovimentoMagazzinoService {
 
     @Override
     @Transactional
-    public MovimentoMagazzinoDto update(MovimentoMagazzinoRequest request) {
-        if (!mmrepository.existsById(request.id())){
-            throw new EntityNotFoundException("Movimento di magazzino non trovato con id: " + request.id());
+    public MovimentoMagazzinoDto update(MovimentoMagazzinoRequest request, Long id) {
+        if (!mmrepository.existsById(id)){
+            throw new EntityNotFoundException("Movimento di magazzino non trovato con id: " + id);
         }
-        MovimentoMagazzino movimentoEntity = mmmapper.toEntity(request);
+        MovimentoMagazzino movimentoEntity = mmrepository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException("Movimento di magazzino non trovato con id: " + id));
+        mmmapper.toEntityUpdate(request, movimentoEntity);
+        movimentoEntity.setId(id);
+
+        // Salva le quantità precedenti prima di fare clear, indicizzate per barcode
+        java.util.Map<String, Integer> quantitaPrecedenti = movimentoEntity.getDettagliMovimento().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        d -> d.getProdotto().getBarcode(),
+                        DettaglioMovimento::getQuantita,
+                        (a, b) -> a
+                ));
+
         movimentoEntity.getDettagliMovimento().clear();
 
         for (DettaglioMovimentoRequest dettaglioRequest : request.dettagliMovimento()) {
-            DettaglioMovimento dettaglioEntity = gestisciDettaglioMovimento(dettaglioRequest, request.tipoMovimento(), "create");
+            DettaglioMovimento dettaglioEntity = gestisciDettaglioMovimento(dettaglioRequest, request.tipoMovimento(), "update", quantitaPrecedenti);
             movimentoEntity.addDettaglioMovimento(dettaglioEntity);
         }
         movimentoEntity.setQuantitaProdotti(movimentoEntity.getDettagliMovimento().size());
@@ -98,8 +105,8 @@ public class MovimentoMagazzinoService implements IMovimentoMagazzinoService {
                 .map(d -> d.getPrezzoVendita().subtract(d.getPrezzoAcquisto()).multiply(BigDecimal.valueOf(d.getQuantita())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        movimentoEntity.setRicavoTotale(ricavo);
-        movimentoEntity.setGuadagnoTotale(guadagno);
+        movimentoEntity.setRicavo(ricavo);
+        movimentoEntity.setGuadagno(guadagno);
         movimentoEntity = mmrepository.save(movimentoEntity);
 
         return mmmapper.toDto(movimentoEntity);
@@ -130,19 +137,23 @@ public class MovimentoMagazzinoService implements IMovimentoMagazzinoService {
         mmrepository.deleteById(id);
     }
 
-    private DettaglioMovimento gestisciDettaglioMovimento(DettaglioMovimentoRequest dettaglio, TipoMovimento tipoMovimento, String mode){
+    private DettaglioMovimento gestisciDettaglioMovimento(DettaglioMovimentoRequest dettaglio, TipoMovimento tipoMovimento, String mode) {
+        return gestisciDettaglioMovimento(dettaglio, tipoMovimento, mode, java.util.Collections.emptyMap());
+    }
+
+    private DettaglioMovimento gestisciDettaglioMovimento(DettaglioMovimentoRequest dettaglio, TipoMovimento tipoMovimento, String mode, java.util.Map<String, Integer> quantitaPrecedenti) {
         ProdottoMagazzino prodottoMagazzino = pmrepository.findByProdottoBarcode(dettaglio.barcodeProdotto())
-                .orElseThrow(() -> new EntityNotFoundException("Prodotto non trovato con barcode inserito" ));
+                .orElseThrow(() -> new EntityNotFoundException("Prodotto non trovato con barcode inserito"));
         Prodotto prodotto = prepository.findByBarcode(dettaglio.barcodeProdotto()).orElseThrow(
                 () -> new EntityNotFoundException("Prodotto non trovato con barcode inserito"));
-        DettaglioMovimento dettaglioEntity =  new DettaglioMovimento();
+        DettaglioMovimento dettaglioEntity = new DettaglioMovimento();
         dettaglioEntity.setProdotto(prodotto);
 
-        int quantitaDaAggiornare = 0;
+        int quantitaDaAggiornare;
         if (mode.equalsIgnoreCase("update")) {
-            int quantitaPrecedente = dettaglioEntity.getQuantita();
-             quantitaDaAggiornare = dettaglio.quantita() - quantitaPrecedente;
-        }else{
+            int quantitaPrecedente = quantitaPrecedenti.getOrDefault(dettaglio.barcodeProdotto(), 0);
+            quantitaDaAggiornare = dettaglio.quantita() - quantitaPrecedente;
+        } else {
             quantitaDaAggiornare = dettaglio.quantita();
         }
         prodottoMagazzino.aggiornaMagazzino(quantitaDaAggiornare, tipoMovimento);
