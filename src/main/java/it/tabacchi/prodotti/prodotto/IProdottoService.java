@@ -10,7 +10,7 @@ public interface IProdottoService {
 
     ProdottoDto create(ProdottoDto request);
 
-    ProdottoDto update(ProdottoDto update);
+    ProdottoDto update(ProdottoDto update, Long id);
 
     ProdottoDto getById(Long id);
 

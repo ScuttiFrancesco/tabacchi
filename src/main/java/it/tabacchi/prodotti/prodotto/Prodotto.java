@@ -12,7 +12,7 @@ public class Prodotto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "barcode", unique = true, nullable = false)
+    @Column(name = "barcode", unique = true, nullable = true)
     private String barcode;
 
     @Column(name = "aams_code", nullable = false)

@@ -7,9 +7,6 @@ import jakarta.validation.constraints.NotNull;
 public record ProdottoDto(
 
         Long id,
-
-        @NotBlank(message = "Il barcode è obbligatorio")
-        @NotNull(message = "Il barcode non può essere null")
         String barcode,
 
         @NotBlank(message = "Il codice AAMS è obbligatorio")

@@ -13,5 +13,6 @@ public interface ProdottoRepository extends JpaRepository<Prodotto, Long>, JpaSp
     boolean existsByBarcode(String barcode);
     boolean existsByAamsCode(String aamsCode);
 
-    boolean existsByBarcodeOrAamsCodeAndIdNot(String barcode,  String aamsCode, Long id);
+    boolean existsByBarcodeAndIdNot(String barcode, Long id);
+    boolean existsByAamsCodeAndIdNot(String aamsCode, Long id);
 }

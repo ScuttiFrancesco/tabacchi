@@ -8,6 +8,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class ProdottoService implements IProdottoService {
     }
 
     @Override
+    @Transactional
     public ProdottoDto create(ProdottoDto request) {
 
             if (prepository.existsByAamsCode(request.aamsCode())) {
@@ -30,22 +32,25 @@ public class ProdottoService implements IProdottoService {
             }
 
             Prodotto prodottoEntity = pmapper.toEntity(request);
+            prodottoEntity.setAttivo(true);
             prodottoEntity = prepository.save(prodottoEntity);
 
             return pmapper.toDto(prodottoEntity);
     }
 
     @Override
-    public ProdottoDto update(ProdottoDto update) {
+    @Transactional
+    public ProdottoDto update(ProdottoDto update, Long id) {
 
-        Prodotto prodottoEntity = prepository.findById(update.id())
+        Prodotto prodottoEntity = prepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Prodotto non trovato"));
 
-        if (prepository.existsByBarcodeOrAamsCodeAndIdNot(update.barcode(), update.aamsCode(), update.id())) {
+        if (prepository.existsByBarcodeAndIdNot(update.barcode(), id) || prepository.existsByAamsCodeAndIdNot(update.aamsCode(), id)) {
             throw new DuplicateDataException("Barcode o AAMS code già esistente per un altro prodotto");
         }
 
         prodottoEntity = pmapper.toEntity(update);
+        prodottoEntity.setId(id);
         prodottoEntity = prepository.save(prodottoEntity);
 
         return pmapper.toDto(prodottoEntity);
@@ -69,9 +74,10 @@ public class ProdottoService implements IProdottoService {
     public PaginatedResponse<List<ProdottoList>> search(ProdottoFilter filter, PaginationInfoRequest paginationInfo) {
 
         Specification<Prodotto> spec = Specification.where((Specification<Prodotto>) null)
-                .and(ProdottoSpec.byCategoria(filter.getCategoria()));
+            .and(ProdottoSpec.byCategoria(filter.getCategoria()))
+            .and(ProdottoSpec.isAttivo(filter.isAttivo()));
 
-        Page<Prodotto> anagrafichePaged = prepository.findAll(spec, PaginationUse.pagination(paginationInfo));
-        return PaginationUse.buildPaginatedResponse(anagrafichePaged, pmapper::toDtoList, paginationInfo);
+        Page<Prodotto> prodotti = prepository.findAll(spec, PaginationUse.pagination(paginationInfo));
+        return PaginationUse.buildPaginatedResponse(prodotti, pmapper::toDtoList, paginationInfo);
     }
 }

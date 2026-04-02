@@ -12,4 +12,11 @@ public class ProdottoSpec {
        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("categoria"), categoria);
     }
 
+    public static Specification<Prodotto> isAttivo(Boolean attivo) {
+        if (attivo == null) {
+            return null;
+        }
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("isAttivo"), attivo);
+    }
+
 }
