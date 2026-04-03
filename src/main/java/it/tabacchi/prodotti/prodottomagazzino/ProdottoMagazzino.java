@@ -31,6 +31,9 @@ public class ProdottoMagazzino {
     @Column(name = "scorta_minima", nullable = false)
     private Integer scortaMinima;
 
+    @Column(name = "quantita_da_ordinare", nullable = false)
+    private Integer quantitaDaOrdinare;
+
     @Column(name = "ultimo_aggiornamento")
     private LocalDateTime ultimoAggiornamento = LocalDateTime.now();
 
@@ -48,6 +51,8 @@ public class ProdottoMagazzino {
     public void setScortaAttuale(Integer scortaAttuale) { this.scortaAttuale = scortaAttuale; }
     public Integer getScortaMinima() { return scortaMinima; }
     public void setScortaMinima(Integer scortaMinima) { this.scortaMinima = scortaMinima; }
+    public Integer getQuantitaDaOrdinare() { return quantitaDaOrdinare; }
+    public void setQuantitaDaOrdinare(Integer quantitaDaOrdinare) { this.quantitaDaOrdinare = quantitaDaOrdinare; }
     public LocalDateTime getUltimoAggiornamento() { return ultimoAggiornamento; }
     public void setUltimoAggiornamento(LocalDateTime ultimoAggiornamento) { this.ultimoAggiornamento = ultimoAggiornamento; }
     //@formatter:on

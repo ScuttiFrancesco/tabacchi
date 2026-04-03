@@ -13,7 +13,7 @@ public record ProdottoMagazzinoRequest(
         String barcodeProdotto,
 
         @NotNull(message = "Il prezzo di vendita è obbligatorio.")
-                @Min(value = 0, message = "Il prezzo di vendita deve essere positivo.")
+        @Min(value = 0, message = "Il prezzo di vendita deve essere positivo.")
         BigDecimal prezzoVendita,
 
         @NotNull(message = "Il prezzo di acquisto è obbligatorio.")
@@ -22,6 +22,10 @@ public record ProdottoMagazzinoRequest(
 
         @NotNull(message = "La scorta minima è obbligatoria.")
         @Min(value = 1, message = "La scorta minima deve essere almeno 1.")
-        Integer scortaMinima
+        Integer scortaMinima,
+
+        @NotNull(message = "La quantità da ordinare è obbligatoria.")
+        @Min(value = 1, message = "La quantità da ordinare non può essere negativa.")
+        Integer quantitaDaOrdinare
 ) {
 }

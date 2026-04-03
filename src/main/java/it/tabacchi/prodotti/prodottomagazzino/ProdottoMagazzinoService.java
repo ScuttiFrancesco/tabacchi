@@ -1,6 +1,7 @@
 package it.tabacchi.prodotti.prodottomagazzino;
 
 import it.tabacchi.enums.Categoria;
+import it.tabacchi.excel.OrdineProdottoDto;
 import it.tabacchi.exception.DuplicateDataException;
 import it.tabacchi.pagination.PaginatedResponse;
 import it.tabacchi.pagination.PaginationInfoRequest;
@@ -31,7 +32,7 @@ public class ProdottoMagazzinoService implements IProdottoMagazzinoService {
 
         Prodotto prodotto = prepository.findByBarcode(request.barcodeProdotto())
                 .orElseThrow(() -> new EntityNotFoundException("Il prodotto con barcode " + request.barcodeProdotto() + " non esiste."));
-        if (prodotto.getProdottoMagazzino() != null){
+        if (prodotto.getProdottoMagazzino() != null) {
             throw new DuplicateDataException("Esiste già un prodotto in magazzino associato al prodotto con barcode: " + request.barcodeProdotto());
         }
 
@@ -48,7 +49,7 @@ public class ProdottoMagazzinoService implements IProdottoMagazzinoService {
 
         ProdottoMagazzino pmEntity = pmrepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Il prodotto in magazzino con id " + id + " non esiste."));
-        if (pmrepository.existsByProdottoBarcodeAndIdNot(update.barcodeProdotto(), id)){
+        if (pmrepository.existsByProdottoBarcodeAndIdNot(update.barcodeProdotto(), id)) {
             throw new DuplicateDataException("Esiste già un prodotto in magazzino con il barcode: " + update.barcodeProdotto());
         }
         Prodotto prodotto = prepository.findByBarcode(update.barcodeProdotto())
@@ -68,7 +69,7 @@ public class ProdottoMagazzinoService implements IProdottoMagazzinoService {
 
     @Override
     public void delete(Long id) {
-        if (!pmrepository.existsById(id)){
+        if (!pmrepository.existsById(id)) {
             throw new EntityNotFoundException("Il prodotto in magazzino con id " + id + " non esiste.");
         }
         pmrepository.deleteById(id);
@@ -85,5 +86,17 @@ public class ProdottoMagazzinoService implements IProdottoMagazzinoService {
     public PaginatedResponse<List<ProdottoMagazzinoList>> getAllByCategoria(Categoria categoria, PaginationInfoRequest paginationInfo) {
         Page<ProdottoMagazzino> page = pmrepository.findAllByProdottoCategoria(categoria, PaginationUse.pagination(paginationInfo));
         return PaginationUse.buildPaginatedResponse(page, pmmapper::toDtoList, paginationInfo);
+    }
+
+    @Override
+    public List<OrdineProdottoDto> cacolaProdottiDaOrdinare() {
+        List<ProdottoMagazzino> prodottiDaOrdinare = pmrepository.findAllByScortaAttualeLessThanScortaMinima();
+        return prodottiDaOrdinare.stream().map(
+                pm -> new OrdineProdottoDto(
+                        pm.getProdotto().getBarcode(),
+                        pm.getProdotto().getDescrizione(),
+                        pm.getQuantitaDaOrdinare()
+                )
+        ).toList();
     }
 }

@@ -13,6 +13,7 @@ public record ProdottoMagazzinoDto(
         BigDecimal prezzoVendita,
         BigDecimal prezzoAcquisto,
         Integer scortaMinima,
-        Integer scortaAttuale
+        Integer scortaAttuale,
+        Integer quantitaDaOrdinare
 ) {
 }

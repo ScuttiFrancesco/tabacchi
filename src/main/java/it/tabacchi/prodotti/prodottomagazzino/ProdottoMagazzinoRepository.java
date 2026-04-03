@@ -4,6 +4,7 @@ import it.tabacchi.enums.Categoria;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,4 +18,7 @@ public interface ProdottoMagazzinoRepository extends JpaRepository<ProdottoMagaz
     boolean existsByProdottoBarcodeAndIdNot(String barcode, Long id);
 
     Page<ProdottoMagazzino> findAllByProdottoCategoria(Categoria categoria, Pageable pageable);
+
+    @Query("SELECT pm FROM ProdottoMagazzino pm WHERE pm.scortaAttuale < pm.scortaMinima")
+    List<ProdottoMagazzino> findAllByScortaAttualeLessThanScortaMinima();
 }

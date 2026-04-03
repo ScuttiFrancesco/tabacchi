@@ -69,6 +69,7 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- MapStruct dependencies -->
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
@@ -133,18 +134,13 @@
 			<groupId>io.hypersistence</groupId>
 			<artifactId>hypersistence-utils-hibernate-60</artifactId>
 			<version>3.8.2</version>
-		</dependency>		
-
-		<!-- Google Authenticator dependencies -->
-		<dependency>
-			<groupId>com.warrenstrange</groupId>
-			<artifactId>googleauth</artifactId>
-			<version>1.5.0</version>
 		</dependency>
+
+		<!-- Excel dependencies -->
 		<dependency>
-			<groupId>com.google.zxing</groupId>
-			<artifactId>javase</artifactId>
-			<version>3.5.3</version>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.5.1</version>
 		</dependency>
 	</dependencies>
 
