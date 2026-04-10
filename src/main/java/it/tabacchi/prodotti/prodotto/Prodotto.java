@@ -1,6 +1,9 @@
 package it.tabacchi.prodotti.prodotto;
 
+import java.util.List;
+
 import it.tabacchi.enums.Categoria;
+import it.tabacchi.prodotti.prezzostorico.PrezzoStorico;
 import it.tabacchi.prodotti.prodottomagazzino.ProdottoMagazzino;
 import jakarta.persistence.*;
 
@@ -30,6 +33,9 @@ public class Prodotto {
     @OneToOne(mappedBy = "prodotto", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     private ProdottoMagazzino prodottoMagazzino;
 
+    @OneToMany(mappedBy = "prodotto", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PrezzoStorico> prezziStorici;
+
     //@formatter:off
     public Prodotto() {}
     public Long getId() { return id; }
@@ -51,5 +57,7 @@ public class Prodotto {
             prodottoMagazzino.setProdotto(this);
         }
     }
+    public List<PrezzoStorico> getPrezziStorici() { return prezziStorici; }
+    public void setPrezziStorici(List<PrezzoStorico> prezziStorici) { this.prezziStorici = prezziStorici; }
     //@formatter:on
 }
