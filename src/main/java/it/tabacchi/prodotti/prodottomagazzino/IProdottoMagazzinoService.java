@@ -1,6 +1,7 @@
 package it.tabacchi.prodotti.prodottomagazzino;
 
 import it.tabacchi.enums.Categoria;
+import it.tabacchi.excel.OrdineProdottoDto;
 import it.tabacchi.pagination.PaginatedResponse;
 import it.tabacchi.pagination.PaginationInfoRequest;
 
@@ -11,7 +12,7 @@ public interface IProdottoMagazzinoService {
 
     ProdottoMagazzinoDto create(ProdottoMagazzinoRequest request);
 
-    ProdottoMagazzinoDto update(ProdottoMagazzinoRequest update);
+    ProdottoMagazzinoDto update(ProdottoMagazzinoRequest update, Long id);
 
     ProdottoMagazzinoDto getById(Long id);
 
@@ -20,4 +21,6 @@ public interface IProdottoMagazzinoService {
     PaginatedResponse<List<ProdottoMagazzinoList>> getAll(PaginationInfoRequest paginationInfo);
 
     PaginatedResponse<List<ProdottoMagazzinoList>> getAllByCategoria(Categoria categoria, PaginationInfoRequest paginationInfo);
+
+    List<OrdineProdottoDto> cacolaProdottiDaOrdinare();
 }

@@ -47,11 +47,11 @@ public class MovimentoMagazzinoController {
     @PutMapping("/{id}")
     public ResponseEntity<MovimentoMagazzinoDto> aggiornaMovimento(@Valid @RequestBody MovimentoMagazzinoRequest movimento,
                                                                    @Parameter(description = "ID del movimento di magazzino da aggiornare", required = true) @PathVariable Long id) {
-        MovimentoMagazzinoDto movimentoAggiornato = movimentoMagazzinoService.update(movimento);
+        MovimentoMagazzinoDto movimentoAggiornato = movimentoMagazzinoService.update(movimento, id);
         return new ResponseEntity<>(movimentoAggiornato, HttpStatus.OK);
     }
 
-    @Operation(
+   /* @Operation(
             summary = "Elimina un movimento di magazzino",
             description = "Elimina un movimento di magazzino specificando l'ID"
     )
@@ -60,7 +60,7 @@ public class MovimentoMagazzinoController {
             @Parameter(description = "ID del movimento di magazzino da eliminare", required = true) @PathVariable Long id) {
         movimentoMagazzinoService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+    }*/
 
     @Operation(
             summary = "Recupera un movimento di magazzino per ID",
@@ -80,7 +80,7 @@ public class MovimentoMagazzinoController {
     @GetMapping
     public ResponseEntity<PaginatedResponse<List<MovimentoMagazzinoList>>> searchMovimenti(
             @RequestParam(required = false) LocalDate data,
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection) {

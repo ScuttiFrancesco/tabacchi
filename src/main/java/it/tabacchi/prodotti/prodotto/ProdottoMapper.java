@@ -1,7 +1,6 @@
 package it.tabacchi.prodotti.prodotto;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 
 import java.util.List;
 
@@ -17,5 +16,7 @@ public interface ProdottoMapper {
     @Mapping(target = "prodottoMagazzino", ignore = true)
     Prodotto toEntity(ProdottoDto dto);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void toEntityUpdate(ProdottoDto dto, @MappingTarget Prodotto entity);
 
 }

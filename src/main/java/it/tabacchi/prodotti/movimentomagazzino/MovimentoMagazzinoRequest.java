@@ -15,7 +15,6 @@ public record MovimentoMagazzinoRequest(
         TipoMovimento tipoMovimento,
 
         @NotNull(message = "I dettagli del movimento sono obbligatori")
-        @Min(value = 1, message = "Deve essere presente almeno un dettaglio movimento")
         List<DettaglioMovimentoRequest> dettagliMovimento
 ) {
 }

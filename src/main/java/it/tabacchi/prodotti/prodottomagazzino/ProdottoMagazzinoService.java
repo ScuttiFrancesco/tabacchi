@@ -1,6 +1,7 @@
 package it.tabacchi.prodotti.prodottomagazzino;
 
 import it.tabacchi.enums.Categoria;
+import it.tabacchi.excel.OrdineProdottoDto;
 import it.tabacchi.exception.DuplicateDataException;
 import it.tabacchi.pagination.PaginatedResponse;
 import it.tabacchi.pagination.PaginationInfoRequest;
@@ -28,30 +29,34 @@ public class ProdottoMagazzinoService implements IProdottoMagazzinoService {
 
     @Override
     public ProdottoMagazzinoDto create(ProdottoMagazzinoRequest request) {
-        if (pmrepository.existsByProdottoBarcode(request.barcodeProdotto())){
-            throw new DuplicateDataException("Esiste già un prodotto in magazzino con il barcode: " + request.barcodeProdotto());
-        }
+
         Prodotto prodotto = prepository.findByBarcode(request.barcodeProdotto())
                 .orElseThrow(() -> new EntityNotFoundException("Il prodotto con barcode " + request.barcodeProdotto() + " non esiste."));
+        if (prodotto.getProdottoMagazzino() != null) {
+            throw new DuplicateDataException("Esiste già un prodotto in magazzino associato al prodotto con barcode: " + request.barcodeProdotto());
+        }
 
         ProdottoMagazzino pmEntity = pmmapper.toEntity(request);
         pmEntity.setProdotto(prodotto);
+        pmEntity.setScortaAttuale(0);
         pmEntity = pmrepository.save(pmEntity);
 
         return pmmapper.toDto(pmEntity);
     }
 
     @Override
-    public ProdottoMagazzinoDto update(ProdottoMagazzinoRequest update) {
+    public ProdottoMagazzinoDto update(ProdottoMagazzinoRequest update, Long id) {
 
-        ProdottoMagazzino pmEntity = pmrepository.findById(update.id())
-                .orElseThrow(() -> new EntityNotFoundException("Il prodotto in magazzino con id " + update.id() + " non esiste."));
-        if (pmrepository.existsByProdottoBarcodeAndIdNot(update.barcodeProdotto(), update.id())){
+        ProdottoMagazzino pmEntity = pmrepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Il prodotto in magazzino con id " + id + " non esiste."));
+        if (pmrepository.existsByProdottoBarcodeAndIdNot(update.barcodeProdotto(), id)) {
             throw new DuplicateDataException("Esiste già un prodotto in magazzino con il barcode: " + update.barcodeProdotto());
         }
         Prodotto prodotto = prepository.findByBarcode(update.barcodeProdotto())
                 .orElseThrow(() -> new EntityNotFoundException("Il prodotto con barcode " + update.barcodeProdotto() + " non esiste."));
+        pmmapper.toEntityUpdate(update, pmEntity);
         pmEntity.setProdotto(prodotto);
+        pmEntity.setId(id);
         pmEntity = pmrepository.save(pmEntity);
         return pmmapper.toDto(pmEntity);
     }
@@ -64,7 +69,7 @@ public class ProdottoMagazzinoService implements IProdottoMagazzinoService {
 
     @Override
     public void delete(Long id) {
-        if (!pmrepository.existsById(id)){
+        if (!pmrepository.existsById(id)) {
             throw new EntityNotFoundException("Il prodotto in magazzino con id " + id + " non esiste.");
         }
         pmrepository.deleteById(id);
@@ -81,5 +86,17 @@ public class ProdottoMagazzinoService implements IProdottoMagazzinoService {
     public PaginatedResponse<List<ProdottoMagazzinoList>> getAllByCategoria(Categoria categoria, PaginationInfoRequest paginationInfo) {
         Page<ProdottoMagazzino> page = pmrepository.findAllByProdottoCategoria(categoria, PaginationUse.pagination(paginationInfo));
         return PaginationUse.buildPaginatedResponse(page, pmmapper::toDtoList, paginationInfo);
+    }
+
+    @Override
+    public List<OrdineProdottoDto> cacolaProdottiDaOrdinare() {
+        List<ProdottoMagazzino> prodottiDaOrdinare = pmrepository.findAllByScortaAttualeLessThanScortaMinima();
+        return prodottiDaOrdinare.stream().map(
+                pm -> new OrdineProdottoDto(
+                        pm.getProdotto().getBarcode(),
+                        pm.getProdotto().getDescrizione(),
+                        pm.getQuantitaDaOrdinare()
+                )
+        ).toList();
     }
 }

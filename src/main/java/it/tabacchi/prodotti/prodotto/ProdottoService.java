@@ -49,7 +49,7 @@ public class ProdottoService implements IProdottoService {
             throw new DuplicateDataException("Barcode o AAMS code già esistente per un altro prodotto");
         }
 
-        prodottoEntity = pmapper.toEntity(update);
+        pmapper.toEntityUpdate(update, prodottoEntity);
         prodottoEntity.setId(id);
         prodottoEntity = prepository.save(prodottoEntity);
 

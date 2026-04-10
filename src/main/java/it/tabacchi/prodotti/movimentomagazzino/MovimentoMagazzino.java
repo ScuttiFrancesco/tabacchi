@@ -18,9 +18,6 @@ public class MovimentoMagazzino {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "movimentoMagazzino", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<DettaglioMovimento> dettagliMovimento;
-
     @Column(name = "quantita", nullable = false)
     private Integer quantitaProdotti;
 
@@ -37,22 +34,25 @@ public class MovimentoMagazzino {
     @Column(name = "data_movimento", nullable = false)
     private LocalDateTime dataMovimento = LocalDateTime.now();
 
+    @OneToMany(mappedBy = "movimentoMagazzino", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<DettaglioMovimento> dettagliMovimento;
     //@formatter:off
+
     public MovimentoMagazzino() {}
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public List<DettaglioMovimento> getDettagliMovimento() { return dettagliMovimento; }
-    public void setDettagliMovimento(List<DettaglioMovimento> dettagliMovimento) { this.dettagliMovimento = dettagliMovimento; }
     public Integer getQuantitaProdotti() { return quantitaProdotti; }
     public void setQuantitaProdotti(Integer quantitaProdotti) { this.quantitaProdotti = quantitaProdotti; }
-    public BigDecimal getRicavoTotale() { return ricavo; }
-    public void setRicavoTotale(BigDecimal ricavo) { this.ricavo = ricavo; }
-    public BigDecimal getGuadagnoTotale() { return guadagno; }
-    public void setGuadagnoTotale(BigDecimal guadagno) { this.guadagno = guadagno; }
+    public BigDecimal getRicavo() { return ricavo; }
+    public void setRicavo(BigDecimal ricavo) { this.ricavo = ricavo; }
+    public BigDecimal getGuadagno() { return guadagno; }
+    public void setGuadagno(BigDecimal guadagno) { this.guadagno = guadagno; }
     public TipoMovimento getTipoMovimento() { return tipoMovimento; }
     public void setTipoMovimento(TipoMovimento tipoMovimento) { this.tipoMovimento = tipoMovimento; }
     public LocalDateTime getDataMovimento() { return dataMovimento; }
     public void setDataMovimento(LocalDateTime dataMovimento) { this.dataMovimento = dataMovimento; }
+    public List<DettaglioMovimento> getDettagliMovimento() { return dettagliMovimento; }
+    public void setDettagliMovimento(List<DettaglioMovimento> dettagliMovimento) { this.dettagliMovimento = dettagliMovimento; }
     //@formatter:on
 
     public void addDettaglioMovimento(DettaglioMovimento dettaglio) {
